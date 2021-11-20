@@ -1,2 +1,2 @@
-web: gunicorn <name of my main folder app>.wsgi --log-file -
+web: gunicorn imkon.wsgi --log-file -
 

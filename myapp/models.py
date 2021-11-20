@@ -1,65 +1,83 @@
 from django.db import models
 
 
-# Create your models here.
 
-TOIFA_CHOICES = (
-    ('Yuridikt', 'Yuridikt'),
-    ('Jismoniy', 'Jismoniy'),
+PERSONAL_CHOICES = (
+    ('Juridical', 'Juridical'),
+    ('Physical', 'Physical'),
 )
 
-HOLATI_CHOICES = (
-    ('Yangi', 'Yangi'),
-    ('Moderatsiada', 'Moderatsiada'),
-    ('Tasdiqlangan', 'Tasdiqlangan'),
-    ('Bekor qilingan', 'Bekor qilingan'),
+STATUS_CHOICES = (
+    ('New', 'New'),
+    ('Moderated', 'Moderated'),
+    ('Approved', 'Approved'),
+    ('Declined', 'Declined'),
 )
 
-TALABA_CHOICES = (
-    ('Bakalavr', 'Bakalavr'),
-    ('Magister', 'Magister',)
+STUDENT_CHOICES = (
+    ('Bachelor', 'Bachelor'),
+    ('Master', 'Master',)
+)
+
+PAYMENT_CHOICES = (
+    ('CASH', 'Cash'),
+    ('PAYME', 'Pay me'),
+    ('CLICK', 'Click'),
+    ('ENUMERATION', 'Enumeration')
 )
 
 
-SUMMA_CHOICES = (
-    ('1 000 000', '1 000 000'),
-    ('5 000 000', '5 000 000'),
-    ('7 000 000', '7 000 000'),
-    ('30 000 000', '30 000 000'),
-)
+class University(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+
+    class Meta:
+        verbose_name_plural = "Universities"
+
+    def __str__(self):
+        return self.name
 
 
 
-class Homiy(models.Model):
-    ismi = models.CharField(max_length=60)
-    turi = models.CharField(choices=TOIFA_CHOICES, max_length=50)
-    raqami = models.IntegerField(default=9989)
-    summa = models.IntegerField(choices=SUMMA_CHOICES, editable=True, default=0)
-    tashkilot = models.CharField(max_length=255, blank=True, null=True)
-    holati = models.CharField(choices=HOLATI_CHOICES, default='Yangi', max_length=50)
-    sarflangan_summa = models.IntegerField(default=0)
+class Sponsor(models.Model):
+    name = models.CharField(max_length=60)
+    personal = models.CharField(choices=PERSONAL_CHOICES, default='Physical', max_length=50)
+    phone = models.CharField(default='9989', null=True, max_length=100)
+    amount = models.IntegerField(null=True, default=1000000)
+    company = models.CharField(max_length=255, blank=True, null=True)
+    status = models.CharField(choices=STATUS_CHOICES, default='New', max_length=50)
+    paid = models.IntegerField(default=0)
+    payment_method = models.CharField(choices=PAYMENT_CHOICES, default='CASH', max_length=100)
     created = models.DateTimeField(auto_now_add=True)
 
 
-    class Meta:
-        verbose_name_plural = 'Homiylar'
+    def __str__(self):
+        return self.name
+
+
+
+class Student(models.Model):
+    name = models.CharField(max_length=50)
+    phone = models.CharField(default='9989', null=True, max_length=100)
+    degree = models.CharField(choices=STUDENT_CHOICES, max_length=50)
+    university = models.ForeignKey(University, on_delete=models.CASCADE)
+    money_needed = models.IntegerField(default=0)
+    money_gained = models.IntegerField(default=0)
+    created = models.DateTimeField(auto_now_add=True, null=True)
+
 
     def __str__(self):
-        return self.ismi
+        return self.name
 
 
 
-class Talaba(models.Model):
-    ismi = models.CharField(max_length=50)
-    talabalik_turi = models.CharField(choices=TALABA_CHOICES, max_length=50)
-    otm = models.CharField(max_length=255)
-    kontrakt_summa = models.IntegerField(default=0)
-    ajratilgan_summa = models.IntegerField(default=0)
+class Contract(models.Model):
+    sponsor = models.ForeignKey(Sponsor, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, null=True, on_delete=models.CASCADE)
+    money = models.IntegerField()
 
-
-    class Meta:
-        verbose_name_plural = 'Talabalar'
 
     def __str__(self):
-        return self.ismi
+        return (str(self.sponsor) + " -> " + str(self.student))
+
 
